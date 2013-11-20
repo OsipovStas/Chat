@@ -114,10 +114,14 @@ private:
         if (!started()) {
             return;
         }
+        lastPing = boost::posix_time::microsec_clock::local_time();
 
+        
+        requestBuffer.commit(HEADER_SIZE);
         std::istream is(&requestBuffer);
         MessageHeader header;
         is >> header;
+        std::cout << header << std::endl;
 
         auto handler = handlers.find(header.msgID());
         if (handler != handlers.end()) {
@@ -242,7 +246,7 @@ private:
 
     void onCheckPing() {
         boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
-        if ((now - lastPing).total_milliseconds() > 7000) {
+        if ((now - lastPing).total_milliseconds() > 5000) {
             std::cout << "stopping " << username << " - no ping in time" << std::endl;
             stop();
         }
@@ -250,20 +254,20 @@ private:
     }
 
     void postCheckPing() {
-        myTimer.expires_from_now(boost::posix_time::millisec(3000));
+        myTimer.expires_from_now(boost::posix_time::millisec(6000));
         myTimer.async_wait(MEM_FN(onCheckPing));
     }
 
     size_t writeComplete(const boost::system::error_code& err, size_t bytes) {
-        bytesToWrite -= bytes;
-        return bytesToWrite;
+        return bytesToWrite - bytes;
     }
 
     size_t readComplete(const boost::system::error_code& err, size_t bytes) {
         if (err) {
             return 0;
         }
-        canRead -= bytes;
+        canRead = HEADER_SIZE - bytes;
+        std::cout << canRead << " " << bytes << std::endl;
         if (canRead == 0 && isHeaderRead) {
             isHeaderRead = false;
             canRead = sizeof (MessageHeader);
@@ -302,6 +306,7 @@ private:
 void handleAccept(Connection::Ptr user, const boost::system::error_code& err) {
     user->start();
     Connection::Ptr newUser = Connection::createNewUser();
+    std::cout << "Accepted" << std::endl;
     acceptor.async_accept(newUser->sock(), boost::bind(handleAccept, newUser, _1));
 }
 

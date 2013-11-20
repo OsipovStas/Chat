@@ -94,7 +94,7 @@ CXXFLAGS= -g -std=c++11
 #CC = gcc
 
 # The C++ program compiler.
-CXX = icpc
+#CXX = icpc
 
 # Un-comment the following line to compile C programs as C++ ones.
 #CC = $(CXX)
