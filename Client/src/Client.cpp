@@ -14,6 +14,7 @@
 #include <deque>
 #include <thread>
 
+
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
 
@@ -37,10 +38,10 @@ public:
     username(username),
     msgCount(-1),
     handlers({
-        {2, &Client::onLogin},
-        {4, &Client::onFetch},
-        {6, &Client::onSend},
-        {8, &Client::onLogout}
+        {Message::login_reply, &Client::onLogin},
+        {Message::fetch_reply, &Client::onFetch},
+        {Message::send_reply, &Client::onSend},
+        {Message::logout_reply, &Client::onLogout}
     }) {
         doConnect(endpoint_iterator);
     }
@@ -124,15 +125,16 @@ private:
     void onLogin() {
         std::istringstream ss(std::string(readMsg.getBody(), readMsg.getBodyLength()));
         ss >> msgCount;
-        std::cout << msgCount;
     }
 
     void onFetch() {
         std::istringstream iss(std::string(readMsg.getBody(), readMsg.getBodyLength()));
         std::string msg;
         iss >> msg;
-        std::cout << msg << std::endl;
-        ++msgCount;
+        if (!msg.empty()) {
+            std::cout << msg << std::endl;
+            ++msgCount;
+        }
     }
 
     void onSend() {
@@ -157,6 +159,7 @@ private:
         std::ostringstream oss;
         oss << msgCount;
         msg.fillBody(oss.str());
+        doWrite(msg);
     }
 
     boost::asio::io_service& io_service_;

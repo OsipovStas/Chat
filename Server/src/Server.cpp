@@ -14,6 +14,7 @@
 #include <sstream>
 #include <functional>
 
+
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
@@ -67,6 +68,7 @@ public:
         Ptr self = shared_from_this();
         auto it = std::find(users.begin(), users.end(), self);
         users.erase(it);
+        std::cout << "stop " << username << std::endl;
     }
 
     bool started() const {
@@ -91,10 +93,10 @@ private:
     username(),
     readMsg(),
     handlers({
-        {1, &Connection::onLogin},
-        {3, &Connection::onFetch},
-        {5, &Connection::onSend},
-        {7, &Connection::onLogout}
+        {Message::login_request, &Connection::onLogin},
+        {Message::fetch_request, &Connection::onFetch},
+        {Message::send_request, &Connection::onSend},
+        {Message::logout_request, &Connection::onLogout}
     }) {
     }
 
@@ -120,7 +122,7 @@ private:
         std::istringstream iss(std::string(readMsg.getBody(), readMsg.getBodyLength()));
         iss >> username;
         addMessage(HELLO_MSG + username + "!");
-        std::cout << username << std::endl;
+        std::cout << "Login " << username << std::endl;
         replyLogin();
     }
 
@@ -179,7 +181,7 @@ private:
                         stop();
                     }
                 });
-        postCheckPing();
+//        postCheckPing();
     }
 
     void doReadBody() {
