@@ -59,7 +59,7 @@
 MY_CFLAGS = -I/home/stasstels/aptu/boost/boost_1_54_0/
 
 # The linker options.
-MY_LIBS = -lboost_system  -lboost_date_time  -lboost_thread
+MY_LIBS = -pthread -lboost_system
 
 # The pre-processor options used by the cpp (man cpp for more).
 CPPFLAGS = -Werror -pedantic -Wall
