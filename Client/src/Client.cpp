@@ -13,7 +13,7 @@
 #include <sstream>
 #include <deque>
 #include <thread>
-
+#include <string>
 
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
@@ -130,9 +130,9 @@ private:
     void onFetch() {
         std::istringstream iss(std::string(readMsg.getBody(), readMsg.getBodyLength()));
         std::string msg;
-        iss >> msg;
+        std::getline(iss, msg);
         if (!msg.empty()) {
-            std::cout << msg << std::endl;
+            std::cout << std::endl << msg << std::endl;
             ++msgCount;
         }
     }
@@ -193,7 +193,7 @@ int main(int argc, char* argv[]) {
         const static std::string EXIT("exit");
         while (true) {
             std::string msgStr;
-            std::cin >> msgStr;
+            std::getline(std::cin, msgStr);
             if (msgStr == EXIT) {
                 c.postMessage(Message::logoutRequest());
                 break;

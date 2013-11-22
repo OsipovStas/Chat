@@ -13,7 +13,7 @@
 #include <iostream>
 #include <sstream>
 #include <functional>
-
+#include <string>
 
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
@@ -41,6 +41,12 @@ UserList users;
 std::vector<std::string > messages;
 const static std::string HELLO_MSG("Hello, ");
 const static std::string BYE_MSG("Bye, ");
+
+
+const static std::string USER_NAME_COLOR("\033[1;31;40m");
+const static std::string SERVICE_COLOR("\033[1;34;40m");
+const static std::string END_COLOR("\033[0m");
+
 //////////////////////////////////////////////////////////////////////////////////
 
 class Connection : public boost::enable_shared_from_this<Connection>, boost::noncopyable {
@@ -64,7 +70,7 @@ public:
         if (!isStarted) return;
         isStarted = false;
         socket_.close();
-        addMessage(BYE_MSG + username + "!");
+        addMessage(SERVICE_COLOR + BYE_MSG + username + "!" + END_COLOR);
         Ptr self = shared_from_this();
         auto it = std::find(users.begin(), users.end(), self);
         users.erase(it);
@@ -120,8 +126,8 @@ private:
 
     void onLogin() {
         std::istringstream iss(std::string(readMsg.getBody(), readMsg.getBodyLength()));
-        iss >> username;
-        addMessage(HELLO_MSG + username + "!");
+        std::getline(iss, username);
+        addMessage(SERVICE_COLOR + HELLO_MSG + username + "!" + END_COLOR);
         std::cout << "Login " << username << std::endl;
         replyLogin();
     }
@@ -154,8 +160,8 @@ private:
     void onSend() {
         std::istringstream iss(std::string(readMsg.getBody(), readMsg.getBodyLength()));
         std::string msg;
-        iss >> msg;
-        addMessage(msg);
+        std::getline(iss, msg);
+        addMessage(USER_NAME_COLOR + username + ": " + END_COLOR + msg);
         replySend();
     }
 
@@ -181,7 +187,7 @@ private:
                         stop();
                     }
                 });
-//        postCheckPing();
+        //        postCheckPing();
     }
 
     void doReadBody() {
