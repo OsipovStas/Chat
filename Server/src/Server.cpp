@@ -73,7 +73,9 @@ void Server::printStats(std::ostream& os) {
     };
     double num = boost::accumulate(copy
             | boost::adaptors::transformed(boost::bind<long long>(ptr2ReqNum, _1)), 0);
-    os << time << " ; " << num << " ; " << time / num << " ; " << copy.size() << std::endl;
+    if(num > 1) {
+        os << time / num << ";" << copy.size() << std::endl;
+    }
 }
 
 void Server::handleAccept(Ptr user, const boost::system::error_code& err) {
@@ -84,7 +86,7 @@ void Server::handleAccept(Ptr user, const boost::system::error_code& err) {
 }
 
 void Server::startWatcher(std::ostream& os) {
-    serverTimer.expires_from_now(boost::posix_time::millisec(10000));
+    serverTimer.expires_from_now(boost::posix_time::millisec(3000));
     serverTimer.async_wait([&](const boost::system::error_code & ec) {
         if (!ec) {
             printStats(os);

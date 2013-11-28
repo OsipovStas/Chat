@@ -154,7 +154,6 @@ void Connection::doReadHeader() {
                     startRequest();
                     doReadBody(readMsg);
                 } else {
-                    std::cout << "Problem" << std::endl;
                     stop();
                 }
             });
@@ -168,7 +167,6 @@ void Connection::doReadBody(Message readMsg) {
                 if (!ec) {
                     handleRequest(readMsg);
                 } else {
-                    std::cout << "Problem" << std::endl;
                     stop();
                 }
             });
@@ -183,7 +181,6 @@ void Connection::doWrite(const Message writeMsg) {
                     completeRequest();
                     doReadHeader();
                 } else {
-                    std::cout << "Problem" << std::endl;
                     stop();
                 }
             });
