@@ -99,7 +99,6 @@ void Server::startServer() {
     for(int i = 0; i < THREADS_NUM; ++i) {
         threads.create_thread(listenThread);
     }
-    threads.join_all();
 }
 
 void Server::listenThread() {
