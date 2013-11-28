@@ -47,9 +47,14 @@ public:
         doConnect(endpoint_iterator);
     }
 
+    void stop() {
+        io_service_.stop();
+        socket_.close();
+    }
+    
     void close() {
         io_service_.post([this]() {
-            socket_.close(); });
+            stop(); });
     }
 
     void postMessage(const Message m) {
@@ -61,11 +66,17 @@ public:
 
 private:
 
+    enum {
+        TIME_OUT = 10
+    };
+    
     void doConnect(tcp::resolver::iterator endpoint_iterator) {
         boost::asio::async_connect(socket_, endpoint_iterator,
                 [this](boost::system::error_code ec, tcp::resolver::iterator) {
                     if (!ec) {
                         doLogin();
+                    } else {
+                        stop();
                     }
                 });
     }
@@ -85,7 +96,7 @@ private:
                     if (!ec) {
                         doReadHeader();
                     } else {
-                        socket_.close();
+                        stop();
                     }
                 });
     }
@@ -99,8 +110,7 @@ private:
                     if (!ec && readMsg.verifyHeader()) {
                         doReadBody();
                     } else {
-                        std::cout << "Problem" << std::endl;
-                        socket_.close();
+                        stop();
                     }
                 });
     }
@@ -114,7 +124,7 @@ private:
                         handleReply();
                         doRequest();
                     } else {
-                        socket_.close();
+                        stop();
                     }
                 });
     }
@@ -125,7 +135,7 @@ private:
             (this->*(handler -> second))();
         } else {
             std::cout << "Wrong command " << readMsg.getMsgType() << std::endl;
-            socket_.close();
+            stop();
         }
     }
 
@@ -149,11 +159,11 @@ private:
     }
 
     void onLogout() {
-        socket_.close();
+        stop();
     }
 
     void doRequest() {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(TIME_OUT));
         if (writeMessages.empty()) {
             doFetch();
         } else {
@@ -216,8 +226,6 @@ int main(int argc, char* argv[]) {
     } catch (std::exception& e) {
         std::cerr << "Exception: " << e.what() << "\n";
     }
-
-    return 0;
 }
 
 
