@@ -8,7 +8,11 @@
 #ifndef MESSAGEHEADER_HPP
 #define	MESSAGEHEADER_HPP
 
+#include <cstring>
+#include <memory>
+#include <iostream>
 #include <boost/shared_array.hpp>
+
 
 // 
 // 0                               32                             63
