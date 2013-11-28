@@ -59,7 +59,7 @@
 MY_CFLAGS = 
 
 # The linker options.
-MY_LIBS = -lboost_system -lpthread
+MY_LIBS = -lboost_system -lboost_thread
 
 # The pre-processor options used by the cpp (man cpp for more).
 CPPFLAGS = -Werror -pedantic -Wall
@@ -94,7 +94,7 @@ CXXFLAGS= -g -std=c++11
 #CC = gcc
 
 # The C++ program compiler.
-#CXX = icpc
+CXX = icpc
 
 # Un-comment the following line to compile C programs as C++ ones.
 #CC = $(CXX)
