@@ -13,6 +13,7 @@
 #include <sstream>
 #include <deque>
 #include <thread>
+#include <chrono>
 #include <string>
 
 #include <boost/asio.hpp>
@@ -76,9 +77,11 @@ private:
     }
 
     void doWrite(const Message m) {
+//        std::cout << "Do write" << std::endl;
         boost::asio::async_write(socket_,
                 boost::asio::buffer(m.getData(), m.getDataLength()),
-                [this](boost::system::error_code ec, std::size_t /*length*/) {
+                [this](boost::system::error_code ec, std::size_t sz/*length*/) {
+//                    std::cout << "Written " << sz << std::endl;
                     if (!ec) {
                         doReadHeader();
                     } else {
@@ -88,18 +91,22 @@ private:
     }
 
     void doReadHeader() {
+//        static long i = 0;
+//        std::cout << "Do read header " << i++ << std::endl;
         boost::asio::async_read(socket_,
                 boost::asio::buffer(readMsg.getData(), Message::HEADER_LENGTH),
                 [this](boost::system::error_code ec, std::size_t /*length*/) {
                     if (!ec && readMsg.verifyHeader()) {
                         doReadBody();
                     } else {
+                        std::cout << "Problem" << std::endl;
                         socket_.close();
                     }
                 });
     }
 
     void doReadBody() {
+//        std::cout << "Do read body" << std::endl;
         boost::asio::async_read(socket_,
                 boost::asio::buffer(readMsg.getBody(), readMsg.getBodyLength()),
                 [this](boost::system::error_code ec, std::size_t /*length*/) {
@@ -146,6 +153,7 @@ private:
     }
 
     void doRequest() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
         if (writeMessages.empty()) {
             doFetch();
         } else {
@@ -184,7 +192,8 @@ int main(int argc, char* argv[]) {
 
         boost::asio::io_service io_service;
         tcp::resolver resolver(io_service);
-        auto endpoint_iterator = resolver.resolve({argv[1], argv[2]});
+	tcp::resolver::query query(argv[1], argv[2]);
+        auto endpoint_iterator = resolver.resolve(query);
         Client c(io_service, endpoint_iterator, std::string(argv[3]));
 
         std::thread t([&io_service]() {

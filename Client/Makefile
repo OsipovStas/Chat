@@ -56,7 +56,7 @@
 ## Customizable Section: adapt those variables to suit your program.
 ##==========================================================================
 # The pre-processor and compiler options.
-MY_CFLAGS = -I/home/stasstels/aptu/boost/boost_1_54_0/
+MY_CFLAGS = -I/home/stels/aptu/boost/boost_1_54_0/
 
 # The linker options.
 MY_LIBS = -pthread -lboost_system
@@ -93,7 +93,7 @@ CXXFLAGS= -g -std=c++11
 #CC = gcc
 
 # The C++ program compiler.
-#CXX = icpc
+CXX = icpc
 
 # Un-comment the following line to compile C programs as C++ ones.
 #CC = $(CXX)
