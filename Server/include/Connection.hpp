@@ -93,9 +93,9 @@ private:
     std::string username;
     
     typedef void(Connection::*Handler)(Message);
-    typedef std::unordered_map<u_int32_t, Handler> TypeHandlerMap;
+    typedef std::vector<Handler> HandlersVector;
 
-    TypeHandlerMap handlers;
+    HandlersVector handlers;
 
     //////////////////////////////
     // Timers

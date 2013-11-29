@@ -63,23 +63,19 @@ Connection::Connection() : socket_(Server::getService()),
 isStarted(false),
 username(),
 handlers({
-    {Message::login_request, &Connection::onLogin},
-    {Message::fetch_request, &Connection::onFetch},
-    {Message::send_request, &Connection::onSend},
-    {Message::logout_request, &Connection::onLogout}
+    &Connection::onLogin,
+    &Connection::onFetch,
+    &Connection::onSend,
+    &Connection::onLogout
 }),
 allTime(0),
 requestCounter(0) {
 }
 
 void Connection::handleRequest(Message readMsg) {
-    auto handler = handlers.find(readMsg.getMsgType());
-    if (handler != handlers.end()) {
-        (this->*(handler -> second))(readMsg);
-    } else {
-        std::cout << "Wrong command " << readMsg.getMsgType() << std::endl;
-        stop();
-    }
+    boost::for_each(handlers, [readMsg, this](Handler h){
+        (this ->*h)(readMsg);
+    });
 }
 
 
@@ -87,6 +83,9 @@ void Connection::handleRequest(Message readMsg) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void Connection::onLogin(Message readMsg) {
+    if (readMsg.getMsgType() != Message::login_request) {
+        return;
+    }
     std::istringstream iss(std::string(readMsg.getBody(), readMsg.getBodyLength()));
     {
         boost::recursive_mutex::scoped_lock lock(userMutex);
@@ -107,6 +106,9 @@ void Connection::replyLogin() {
 }
 
 void Connection::onFetch(Message readMsg) {
+    if (readMsg.getMsgType() != Message::fetch_request) {
+        return;
+    }
     std::istringstream iss(std::string(readMsg.getBody(), readMsg.getBodyLength()));
     u_int32_t state;
     iss >> state;
@@ -125,6 +127,9 @@ void Connection::replyFetch(u_int32_t state) {
 }
 
 void Connection::onSend(Message readMsg) {
+    if (readMsg.getMsgType() != Message::send_request) {
+        return;
+    }
     std::istringstream iss(std::string(readMsg.getBody(), readMsg.getBodyLength()));
     std::string msg;
     std::getline(iss, msg);
@@ -138,6 +143,9 @@ void Connection::replySend() {
 }
 
 void Connection::onLogout(Message readMsg) {
+    if (readMsg.getMsgType() != Message::logout_request) {
+        return;
+    }
     Message msg(Message::logout_reply);
     doWrite(msg);
 }
@@ -145,7 +153,7 @@ void Connection::onLogout(Message readMsg) {
 ///////////////////////////////////////////////////////////////////////////////////////
 
 void Connection::doReadHeader() {
-//    std::cout << "Read header " << i++ << " " << std::endl;
+    //    std::cout << "Read header " << i++ << " " << std::endl;
     Message readMsg;
     boost::asio::async_read(socket_,
             boost::asio::buffer(readMsg.getData(), Message::HEADER_LENGTH),
